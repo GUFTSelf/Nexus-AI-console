@@ -41,3 +41,12 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gutsdeterministic.nexusai.tests
+
+schemes:
+  NexusAI:
+    build:
+      targets:
+        NexusAI: all
+    test:
+      targets:
+        - NexusAITests
