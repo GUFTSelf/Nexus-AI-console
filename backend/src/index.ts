@@ -10,9 +10,21 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
 
 app.use(helmet());
-app.use(cors({ origin: true }));
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || configuredOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origin is not permitted'));
+  }
+}));
 app.use(express.json());
 app.use(apiRateLimiter);
 
@@ -47,7 +59,7 @@ app.get('/health', (req: Request, res: Response) => {
 // 2. Claim Verification Endpoint
 app.post('/v1/verify-claim', verifyFirebaseTokens, (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { rawInput, domain, contentType, integerOnly } = req.body;
+    const { rawInput, domain, contentType } = req.body;
 
     if (!rawInput || typeof rawInput !== 'string') {
       return res.status(400).json({
@@ -61,7 +73,7 @@ app.post('/v1/verify-claim', verifyFirebaseTokens, (req: AuthenticatedRequest, r
     const canonicalHash = VekKernelService.computeSha256(rawInput);
 
     return res.status(200).json({
-      status: 'CONDITIONALLY_VERIFIED',
+      status: 'INCONCLUSIVE',
       caseId: 'NX-GW-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       domain: domain || 'General Consumer',
       contentType: contentType || 'Text Claim',
@@ -70,7 +82,7 @@ app.post('/v1/verify-claim', verifyFirebaseTokens, (req: AuthenticatedRequest, r
       canonicalHash,
       requiresAuthenticatedEvidence: true,
       verifiedStatus: false, // Unauthenticated evidence cannot be represented as verified
-      assessmentSummary: 'Claim evaluated against VEK Server Gateway policies.',
+      assessmentSummary: 'No authenticated evidence was supplied; factual verification is inconclusive.',
       timestamp: new Date().toISOString()
     });
   } catch (err: any) {
@@ -84,7 +96,7 @@ app.post('/v1/verify-claim', verifyFirebaseTokens, (req: AuthenticatedRequest, r
 // 3. Evidence Logging Endpoint
 app.post('/v1/evidence-record', verifyFirebaseTokens, (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { caseId, evidenceTitle, publisher, sourceUrl, isPrimarySource, rawContent } = req.body;
+    const { caseId, evidenceTitle, publisher, sourceUrl, isPrimarySource } = req.body;
 
     if (!caseId || !evidenceTitle) {
       return res.status(400).json({
@@ -127,20 +139,20 @@ app.post('/v1/replay-verification', verifyFirebaseTokens, (req: AuthenticatedReq
   try {
     const { initialValue, operations, replayCount, integerOnly } = req.body;
 
-    if (typeof initialValue !== 'number' || !Array.isArray(operations)) {
+    if ((typeof initialValue !== 'number' && typeof initialValue !== 'string') || !Array.isArray(operations)) {
       return res.status(400).json({
         error: 'INVALID_REPLAY_PAYLOAD',
-        message: 'initialValue (number) and operations (array) are required'
+        message: 'initialValue (number or decimal string) and operations (array) are required'
       });
     }
 
     const mathOps: MathOp[] = operations.map((opItem: any) => ({
       op: opItem.op,
-      value: Number(opItem.value)
+      value: opItem.value
     }));
 
     const result = VekKernelService.replay(
-      Number(initialValue),
+      initialValue,
       mathOps,
       Number(replayCount || 2),
       Boolean(integerOnly)
@@ -155,14 +167,10 @@ app.post('/v1/replay-verification', verifyFirebaseTokens, (req: AuthenticatedReq
   }
 });
 
-if (require.main === module && process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(JSON.stringify({
-      event: 'SERVER_STARTED',
-      message: `Nexus Verification Gateway running on port ${PORT}`,
-      environment: process.env.NODE_ENV || 'development'
-    }));
-  });
-}
-
-export default app;
+app.listen(PORT, () => {
+  console.log(JSON.stringify({
+    event: 'SERVER_STARTED',
+    message: `Nexus Verification Gateway running on port ${PORT}`,
+    environment: process.env.NODE_ENV || 'development'
+  }));
+});

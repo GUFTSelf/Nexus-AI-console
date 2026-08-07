@@ -86,7 +86,11 @@ fun VekTraceInspector(
             label = "TRACE HASH",
             value = caseItem.demonstrationTraceHash,
             isCode = true,
-            badge = if (caseItem.isDemonstration) "Demonstration Hash" else "Verified Kernel Trace"
+            badge = when {
+                caseItem.executionMode == "DETERMINISTIC_EXECUTION" || caseItem.executionMode == "REPLAY_COMPARISON" -> "Canonical SHA-256"
+                caseItem.isDemonstration -> "Demonstration Hash"
+                else -> "Verified Kernel Trace"
+            }
         )
         TraceRow(label = "TIMESTAMP", value = formattedDate)
         TraceRow(label = "DOMAIN POLICY", value = caseItem.domain)
@@ -109,10 +113,12 @@ fun VekTraceInspector(
                       "hash": "${caseItem.demonstrationTraceHash}",
                       "domain": "${caseItem.domain}",
                       "contentType": "${caseItem.contentType}",
+                      "executionMode": "${caseItem.executionMode}",
                       "status": "${caseItem.status.name}",
                       "riskLevel": "${caseItem.riskLevel}",
                       "isDemonstration": ${caseItem.isDemonstration},
-                      "kernelVersion": "VEK-2026.4-GUTS"
+                      "kernelVersion": "VEK-2026.4-GUTS",
+                      "canonicalRecord": ${caseItem.canonicalRecordJson}
                     }
                     """.trimIndent(),
                     color = ElectricLime,

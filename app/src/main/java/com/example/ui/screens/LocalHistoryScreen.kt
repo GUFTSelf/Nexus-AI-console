@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.sp
 import com.example.model.LocalExecutionRecord
 import com.example.ui.NexusViewModel
 import com.example.ui.theme.*
+import org.json.JSONArray
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -319,8 +321,21 @@ private fun formatTime(millis: Long): String {
 }
 
 private fun buildExportJson(records: List<LocalExecutionRecord>): String {
-    val itemsJson = records.joinToString(",") { rec ->
-        """{"id":"${rec.id}","mode":"${rec.mode}","title":"${rec.title.replace("\"", "\\\"")}","sha256":"${rec.sha256Hash}","json":${rec.canonicalJson}}"""
+    val items = JSONArray()
+    records.forEach { record ->
+        val canonicalRecord = runCatching { JSONObject(record.canonicalJson) }
+            .getOrElse { record.canonicalJson }
+        items.put(
+            JSONObject()
+                .put("id", record.id)
+                .put("mode", record.mode)
+                .put("title", record.title)
+                .put("sha256", record.sha256Hash)
+                .put("canonicalRecord", canonicalRecord)
+        )
     }
-    return """{"exportedAt":${System.currentTimeMillis()},"records":[$itemsJson]}"""
+    return JSONObject()
+        .put("exportedAt", System.currentTimeMillis())
+        .put("records", items)
+        .toString()
 }
