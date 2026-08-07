@@ -94,7 +94,9 @@ interface NexusVerificationGatewayService {
 object NexusVerificationGatewayClient {
     val serviceOrNull: NexusVerificationGatewayService? by lazy {
         val configuredUrl = BuildConfig.NEXUS_GATEWAY_BASE_URL.trim()
-        if (configuredUrl.isBlank()) return@lazy null
+        if (configuredUrl.isBlank() || configuredUrl.equals("DISABLED", ignoreCase = true)) {
+            return@lazy null
+        }
         val normalizedUrl = if (configuredUrl.endsWith('/')) configuredUrl else "$configuredUrl/"
         if (!BuildConfig.DEBUG && !normalizedUrl.startsWith("https://")) return@lazy null
 
