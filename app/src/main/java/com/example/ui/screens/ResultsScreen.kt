@@ -56,8 +56,6 @@ fun ResultsScreen(
     val rules = remember(caseItem.rulesJson) { viewModel.parseRules(caseItem.rulesJson) }
     val warnings = remember(caseItem.warningsJson) { viewModel.parseStringList(caseItem.warningsJson) }
     val actions = remember(caseItem.actionsJson) { viewModel.parseStringList(caseItem.actionsJson) }
-    val isDeterministicExecution = caseItem.executionMode == "DETERMINISTIC_EXECUTION" ||
-        caseItem.executionMode == "REPLAY_COMPARISON"
 
     var reviewerNotesInput by remember(caseItem.reviewerNotes) { mutableStateOf(caseItem.reviewerNotes ?: "") }
 
@@ -154,34 +152,26 @@ fun ResultsScreen(
             }
         }
 
-        if (isDeterministicExecution) {
-            item {
-                DeterministicExecutionCard(caseItem = caseItem)
-            }
-        } else {
-            // Multi-Factor Trust Score applies only to evidence-verification cases.
-            item {
-                TrustScoreCard(scores = scores)
-            }
+        // Multi-Factor Trust Score
+        item {
+            TrustScoreCard(scores = scores)
         }
 
-        if (claims.isNotEmpty()) {
-            // Decomposed Claims & Evidence Analysis Section
-            item {
-                Column {
-                    Text(
-                        text = "DECOMPOSED CLAIMS & EVIDENCE ANALYSIS",
-                        color = ElectricLime,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+        // Decomposed Claims & Evidence Analysis Section
+        item {
+            Column {
+                Text(
+                    text = "DECOMPOSED CLAIMS & EVIDENCE ANALYSIS",
+                    color = ElectricLime,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
-                    claims.forEach { claim ->
-                        ClaimCardItem(claim = claim)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                claims.forEach { claim ->
+                    ClaimCardItem(claim = claim)
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
@@ -224,86 +214,84 @@ fun ResultsScreen(
             }
         }
 
-        if (caseItem.humanReviewRequired) {
-            // Human Review & Escalation Panel
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(CyberSurface, RoundedCornerShape(8.dp))
-                        .border(1.dp, MutedBorder, RoundedCornerShape(8.dp))
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "HUMAN REVIEW & WORKFLOW GOVERNANCE",
-                        color = ElectricLime,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+        // Human Review & Escalation Panel
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(CyberSurface, RoundedCornerShape(8.dp))
+                    .border(1.dp, MutedBorder, RoundedCornerShape(8.dp))
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "HUMAN REVIEW & WORKFLOW GOVERNANCE",
+                    color = ElectricLime,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Reviewer Status: ${caseItem.reviewerStatus ?: "Pending"}",
+                    color = OffWhiteText,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = reviewerNotesInput,
+                    onValueChange = { reviewerNotesInput = it },
+                    label = { Text("Reviewer Notes / Escalation Justification", color = MutedText) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = CyberBlack,
+                        unfocusedContainerColor = CyberBlack,
+                        focusedBorderColor = ElectricLime,
+                        unfocusedBorderColor = MutedBorder,
+                        focusedTextColor = OffWhiteText,
+                        unfocusedTextColor = OffWhiteText
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Reviewer Status: ${caseItem.reviewerStatus ?: "Pending"}",
-                        color = OffWhiteText,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                    OutlinedTextField(
-                        value = reviewerNotesInput,
-                        onValueChange = { reviewerNotesInput = it },
-                        label = { Text("Reviewer Notes / Escalation Justification", color = MutedText) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = CyberBlack,
-                            unfocusedContainerColor = CyberBlack,
-                            focusedBorderColor = ElectricLime,
-                            unfocusedBorderColor = MutedBorder,
-                            focusedTextColor = OffWhiteText,
-                            unfocusedTextColor = OffWhiteText
-                        )
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {
+                            viewModel.updateHumanReviewStatus(caseItem.caseId, "Approved", reviewerNotesInput)
+                            Toast.makeText(context, "Case decision approved", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = StatusVerified, contentColor = CyberBlack),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Approve", fontWeight = FontWeight.Bold)
+                    }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = {
+                            viewModel.updateHumanReviewStatus(caseItem.caseId, "Escalated", reviewerNotesInput)
+                            Toast.makeText(context, "Case escalated to Senior Officer", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = StatusConditional, contentColor = CyberBlack),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Escalate", fontWeight = FontWeight.Bold)
+                    }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = {
-                                viewModel.updateHumanReviewStatus(caseItem.caseId, "Approved", reviewerNotesInput)
-                                Toast.makeText(context, "Case decision approved", Toast.LENGTH_SHORT).show()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = StatusVerified, contentColor = CyberBlack),
-                            shape = RoundedCornerShape(4.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Approve", fontWeight = FontWeight.Bold)
-                        }
-
-                        Button(
-                            onClick = {
-                                viewModel.updateHumanReviewStatus(caseItem.caseId, "Escalated", reviewerNotesInput)
-                                Toast.makeText(context, "Case escalated to Senior Officer", Toast.LENGTH_SHORT).show()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = StatusConditional, contentColor = CyberBlack),
-                            shape = RoundedCornerShape(4.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Escalate", fontWeight = FontWeight.Bold)
-                        }
-
-                        Button(
-                            onClick = {
-                                viewModel.updateHumanReviewStatus(caseItem.caseId, "Rejected", reviewerNotesInput)
-                                Toast.makeText(context, "Case rejected", Toast.LENGTH_SHORT).show()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = StatusUnsupported, contentColor = OffWhiteText),
-                            shape = RoundedCornerShape(4.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Reject", fontWeight = FontWeight.Bold)
-                        }
+                    Button(
+                        onClick = {
+                            viewModel.updateHumanReviewStatus(caseItem.caseId, "Rejected", reviewerNotesInput)
+                            Toast.makeText(context, "Case rejected", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = StatusUnsupported, contentColor = OffWhiteText),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Reject", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -313,47 +301,6 @@ fun ResultsScreen(
         item {
             VekTraceInspector(caseItem = caseItem)
         }
-    }
-}
-
-@Composable
-private fun DeterministicExecutionCard(caseItem: VerificationCase) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(CyberSurface, RoundedCornerShape(8.dp))
-            .border(1.dp, ElectricLime.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "CANONICAL EXECUTION RECORD",
-            color = ElectricLime,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Mode: ${caseItem.executionMode}",
-            color = CyberCyan,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = caseItem.canonicalRecordJson,
-            color = OffWhiteText,
-            fontSize = 11.sp,
-            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-            lineHeight = 16.sp
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = "SHA-256: ${caseItem.demonstrationTraceHash}",
-            color = ElectricLime,
-            fontSize = 10.sp,
-            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-        )
     }
 }
 

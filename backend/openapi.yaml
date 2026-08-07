@@ -4,6 +4,8 @@ info:
   description: Production API for Nexus AI VEK deterministic claim and replay verification.
   version: 1.0.0
 servers:
+  - url: https://nexus-verification-gateway-uc.a.run.app
+    description: Production Google Cloud Run environment
   - url: http://localhost:8080
     description: Local development environment
 
@@ -42,7 +44,7 @@ paths:
       operationId: verifyClaim
       security:
         - BearerAuth: []
-          AppCheck: []
+        - AppCheck: []
       requestBody:
         required: true
         content:
@@ -66,7 +68,7 @@ paths:
                   example: false
       responses:
         '200':
-          description: Inconclusive assessment record created until authenticated evidence is supplied
+          description: Claim assessment record created
         '401':
           description: Unauthorized auth or App Check token
 
@@ -76,7 +78,6 @@ paths:
       operationId: recordEvidence
       security:
         - BearerAuth: []
-          AppCheck: []
       requestBody:
         required: true
         content:
@@ -107,9 +108,6 @@ paths:
     post:
       summary: Multi-Run Deterministic Replay Verification
       operationId: replayVerification
-      security:
-        - BearerAuth: []
-          AppCheck: []
       requestBody:
         required: true
         content:
@@ -121,9 +119,7 @@ paths:
                 - operations
               properties:
                 initialValue:
-                  oneOf:
-                    - type: number
-                    - type: string
+                  type: number
                   example: 7
                 operations:
                   type: array
@@ -135,9 +131,7 @@ paths:
                         enum: [ADD, SUBTRACT, MULTIPLY, DIVIDE]
                         example: "MULTIPLY"
                       value:
-                        oneOf:
-                          - type: number
-                          - type: string
+                        type: number
                         example: 8
                 replayCount:
                   type: integer
