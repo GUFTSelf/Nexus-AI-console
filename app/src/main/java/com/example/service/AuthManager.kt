@@ -68,7 +68,7 @@ class AuthManager(private val context: Context) {
         val profile = UserProfile(
             uid = user.uid,
             displayName = user.displayName ?: user.email?.substringBefore("@") ?: "Nexus Sentinel",
-            email = user.email ?: "user@nexusai.io",
+            email = user.email.orEmpty(),
             photoUrl = user.photoUrl?.toString(),
             tier = tier,
             isEnrolled = true
@@ -83,9 +83,9 @@ class AuthManager(private val context: Context) {
         return try {
             val credentialManager = CredentialManager.create(context)
             
-            // Generate request or fallback to mock user if Google Play Services / WebClientId not set
-            val clientIdToUse = webClientId.ifEmpty { 
-                "1029384756-nexusai.apps.googleusercontent.com" 
+            val clientIdToUse = webClientId.ifBlank { BuildConfig.GOOGLE_WEB_CLIENT_ID }
+            if (clientIdToUse.isBlank() || clientIdToUse == "MY_GOOGLE_WEB_CLIENT_ID") {
+                throw IllegalStateException("Google OAuth client ID is not configured.")
             }
 
             val googleIdOption = GetGoogleIdOption.Builder()
@@ -117,7 +117,7 @@ class AuthManager(private val context: Context) {
                     val profile = UserProfile(
                         uid = user.uid,
                         displayName = user.displayName ?: "Nexus Google User",
-                        email = user.email ?: "google.user@nexusai.io",
+                        email = user.email.orEmpty(),
                         photoUrl = user.photoUrl?.toString(),
                         tier = AppTier.PRO,
                         isEnrolled = true
@@ -125,17 +125,14 @@ class AuthManager(private val context: Context) {
                     _currentUserProfile.value = profile
                     _authState.value = AuthState.LoggedIn(profile)
                     Result.success(profile)
-                } else {
-                    enrollDemoUser("Google Auth User", "google.verifiable@nexusai.io", AppTier.PRO)
-                }
+                } else throw IllegalStateException("Firebase authentication is not configured.")
             } else {
-                // Fallback enrollment
-                enrollDemoUser("Google Auth User", "google.verifiable@nexusai.io", AppTier.PRO)
+                throw IllegalStateException("Google returned an unsupported credential type.")
             }
         } catch (e: Exception) {
-            Log.e("AuthManager", "Google sign-in exception: ${e.message}. Using fallback enrollment.", e)
-            // Graceful fallback for non-GMS / emulator environments
-            enrollDemoUser("Google Enrolled Sentinel", "google.sentinel@nexusai.io", AppTier.PRO)
+            Log.e("AuthManager", "Google sign-in failed: ${e.message}", e)
+            _authState.value = AuthState.Error(e.message ?: "Google sign-in failed.")
+            Result.failure(e)
         }
     }
 
@@ -161,12 +158,11 @@ class AuthManager(private val context: Context) {
                 _currentUserProfile.value = profile
                 _authState.value = AuthState.LoggedIn(profile)
                 Result.success(profile)
-            } else {
-                enrollDemoUser(displayName.ifEmpty { "Nexus Member" }, email, tier)
-            }
+            } else throw IllegalStateException("Firebase authentication is not configured.")
         } catch (e: Exception) {
-            Log.e("AuthManager", "Email auth fallback: ${e.message}")
-            enrollDemoUser(displayName.ifEmpty { "Nexus Member" }, email, tier)
+            Log.e("AuthManager", "Email authentication failed: ${e.message}")
+            _authState.value = AuthState.Error(e.message ?: "Email authentication failed.")
+            Result.failure(e)
         }
     }
 
@@ -174,7 +170,7 @@ class AuthManager(private val context: Context) {
         val profile = UserProfile(
             uid = "NX-GGL-" + System.currentTimeMillis().toString().takeLast(6),
             displayName = name.ifEmpty { "Google Certified User" },
-            email = email.ifEmpty { "google.auth@nexusai.io" },
+            email = email.ifEmpty { "demo-local" },
             tier = tier,
             isEnrolled = true
         )
@@ -200,5 +196,21 @@ class AuthManager(private val context: Context) {
         }
         _currentUserProfile.value = null
         _authState.value = AuthState.LoggedOut
+    }
+
+    suspend fun deleteAccount(): Result<Unit> {
+        _authState.value = AuthState.Loading
+        return try {
+            auth?.currentUser?.delete()?.await()
+            _currentUserProfile.value = null
+            _authState.value = AuthState.LoggedOut
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("AuthManager", "Account deletion failed", e)
+            _authState.value = AuthState.Error(
+                "Account deletion requires a recent sign-in. Sign in again and retry."
+            )
+            Result.failure(e)
+        }
     }
 }

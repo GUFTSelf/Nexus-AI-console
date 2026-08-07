@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.BuildConfig
 import com.example.model.AuditLogEntry
 import com.example.model.VerificationCase
 import com.example.model.VerificationPolicy
@@ -14,7 +16,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [VerificationCase::class, VerificationPolicy::class, AuditLogEntry::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class NexusDatabase : RoomDatabase() {
@@ -31,10 +33,22 @@ abstract class NexusDatabase : RoomDatabase() {
                     NexusDatabase::class.java,
                     "nexus_ai_vek_db"
                 )
+                .addMigrations(MIGRATION_1_2)
                 .addCallback(DatabaseCallback(context))
                 .build()
                 INSTANCE = instance
                 instance
+            }
+        }
+
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE verification_cases ADD COLUMN executionMode TEXT NOT NULL DEFAULT 'CLAIM_VERIFICATION'"
+                )
+                db.execSQL(
+                    "ALTER TABLE verification_cases ADD COLUMN canonicalRecordJson TEXT NOT NULL DEFAULT '{}'"
+                )
             }
         }
 
@@ -51,14 +65,16 @@ abstract class NexusDatabase : RoomDatabase() {
             }
 
             private suspend fun populateInitialData(dao: NexusDao) {
-                SampleData.getDemoCases().forEach { case ->
-                    dao.insertCase(case)
+                if (BuildConfig.DEBUG) {
+                    SampleData.getDemoCases().forEach { case ->
+                        dao.insertCase(case)
+                    }
+                    SampleData.getDemoAuditLogs().forEach { log ->
+                        dao.insertAuditLog(log)
+                    }
                 }
                 SampleData.getDemoPolicies().forEach { policy ->
                     dao.insertPolicy(policy)
-                }
-                SampleData.getDemoAuditLogs().forEach { log ->
-                    dao.insertAuditLog(log)
                 }
             }
         }

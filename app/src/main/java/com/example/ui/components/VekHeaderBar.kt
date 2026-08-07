@@ -32,6 +32,7 @@ fun VekHeaderBar(
     onOpenDrawer: () -> Unit,
     currentUser: UserProfile? = null,
     onOpenAuthDialog: () -> Unit = {},
+    authEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -146,7 +147,7 @@ fun VekHeaderBar(
                     .clip(RoundedCornerShape(18.dp))
                     .background(CyberSurfaceHeader)
                     .border(1.dp, ElectricLime, RoundedCornerShape(18.dp))
-                    .clickable { onOpenAuthDialog() }
+                    .then(if (authEnabled) Modifier.clickable { onOpenAuthDialog() } else Modifier)
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -159,7 +160,7 @@ fun VekHeaderBar(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = currentUser?.displayName?.take(1)?.uppercase() ?: "G",
+                            text = currentUser?.displayName?.take(1)?.uppercase() ?: if (authEnabled) "G" else "L",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Black,
                             color = CyberBlack
@@ -169,7 +170,7 @@ fun VekHeaderBar(
                     Spacer(modifier = Modifier.width(4.dp))
 
                     Text(
-                        text = currentUser?.tier?.displayName?.uppercase() ?: "PRO",
+                        text = currentUser?.tier?.displayName?.uppercase() ?: if (authEnabled) "PRO" else "LOCAL",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black,
                         color = ElectricLime

@@ -89,7 +89,9 @@ data class VerificationCase(
     val reviewerStatus: String? = "Pending", // Pending, Approved, Rejected, Escalated
     val traceId: String,
     val demonstrationTraceHash: String,
-    val isDemonstration: Boolean = false
+    val isDemonstration: Boolean = false,
+    val executionMode: String = "CLAIM_VERIFICATION",
+    val canonicalRecordJson: String = "{}"
 )
 
 @Entity(tableName = "verification_policies")
