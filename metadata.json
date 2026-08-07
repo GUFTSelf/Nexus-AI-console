@@ -1,0 +1,6 @@
+{
+  "name": "Nexus AI Console",
+  "description": "Nexus AI General AI Console powered by Gemini & Verifiable Execution Kernel (VEK).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

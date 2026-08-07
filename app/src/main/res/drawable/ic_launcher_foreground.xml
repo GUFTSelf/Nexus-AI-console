@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- VEK Shield Outer Layer -->
+    <path
+        android:fillColor="#CCFF00"
+        android:pathData="M54,22 L78,32 V54 C78,69.5 67.8,82.8 54,87 C40.2,82.8 30,69.5 30,54 V32 L54,22 Z" />
+    <!-- VEK Core Inner Dark Hex -->
+    <path
+        android:fillColor="#0B0F19"
+        android:pathData="M54,28 L72,36 V54 C72,65.8 64.3,76 54,79.5 C43.7,76 36,65.8 36,54 V36 L54,28 Z" />
+    <!-- VEK Node Core Light Lime -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M54,40 L64,45 V55 L54,61 L44,55 V45 Z" />
+    <!-- Center Check Verified Mark -->
+    <path
+        android:fillColor="#0B0F19"
+        android:pathData="M50,54 L46,50 L43.5,52.5 L50,59 L63,46 L60.5,43.5 Z" />
+</vector>
