@@ -1,28 +1,44 @@
 import { Request, Response, NextFunction } from 'express';
-import * as admin from 'firebase-admin';
+import { getApps, initializeApp } from 'firebase-admin/app';
+import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
+import { getAppCheck, VerifyAppCheckTokenResponse } from 'firebase-admin/app-check';
 
 // Initialize Firebase Admin SDK if service account environment variables are present
-if (!admin.apps.length) {
+if (!getApps().length) {
   try {
-    admin.initializeApp();
+    initializeApp();
   } catch (err) {
     console.warn('Firebase Admin initialization notice: Running without explicit service account config.');
   }
 }
 
 export interface AuthenticatedRequest extends Request {
-  user?: admin.auth.DecodedIdToken;
-  appCheckToken?: admin.appCheck.DecodedAppCheckToken;
+  user?: DecodedIdToken;
+  appCheckToken?: VerifyAppCheckTokenResponse;
 }
 
 export async function verifyFirebaseTokens(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   const appCheckHeader = req.headers['x-firebase-appcheck'] as string | undefined;
+  const production = process.env.NODE_ENV === 'production';
 
-  // Verify App Check Header when available in production
-  if (appCheckHeader && process.env.NODE_ENV === 'production') {
+  if (production && !appCheckHeader) {
+    return res.status(401).json({
+      error: 'UNAUTHORIZED_APP_CHECK_REQUIRED',
+      message: 'Firebase App Check token is required'
+    });
+  }
+
+  if (production && (!authHeader || !authHeader.startsWith('Bearer '))) {
+    return res.status(401).json({
+      error: 'UNAUTHORIZED_USER_TOKEN_REQUIRED',
+      message: 'Firebase Auth bearer token is required'
+    });
+  }
+
+  if (appCheckHeader) {
     try {
-      const appCheckToken = await admin.appCheck().verifyToken(appCheckHeader);
+      const appCheckToken = await getAppCheck().verifyToken(appCheckHeader);
       req.appCheckToken = appCheckToken;
     } catch (error) {
       return res.status(401).json({
@@ -32,11 +48,10 @@ export async function verifyFirebaseTokens(req: AuthenticatedRequest, res: Respo
     }
   }
 
-  // Verify Bearer Auth Token if header is provided
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split('Bearer ')[1];
     try {
-      const decodedUser = await admin.auth().verifyIdToken(token);
+      const decodedUser = await getAuth().verifyIdToken(token);
       req.user = decodedUser;
     } catch (error) {
       return res.status(401).json({

@@ -1,16 +1,34 @@
 import * as crypto from 'crypto';
+import Decimal from 'decimal.js';
+
+Decimal.set({
+  precision: 34,
+  rounding: Decimal.ROUND_HALF_EVEN,
+  toExpNeg: -1000000,
+  toExpPos: 1000000
+});
+
+export type MathOpName = 'ADD' | 'SUBTRACT' | 'MULTIPLY' | 'DIVIDE';
 
 export interface MathOp {
-  op: 'ADD' | 'SUBTRACT' | 'MULTIPLY' | 'DIVIDE';
-  value: number;
+  op: MathOpName;
+  value: number | string;
 }
 
 export interface TransitionStep {
   stepIndex: number;
-  op: string;
+  op: MathOpName;
   operand: number;
   previousState: number;
   nextState: number;
+}
+
+interface CanonicalTransitionStep {
+  index: number;
+  operation: MathOpName;
+  operand: string;
+  before: string;
+  after: string;
 }
 
 export interface DeterministicExecutionResult {
@@ -35,78 +53,110 @@ export interface ReplayComparisonResult {
 }
 
 export class VekKernelService {
+  private static readonly schemaVersion = 'nexus.execution.v1';
+
   public static executeDeterministic(
-    initialValue: number,
+    initialValue: number | string,
     operations: MathOp[],
     integerOnly: boolean = false
   ): DeterministicExecutionResult {
-    if (integerOnly && !Number.isInteger(initialValue)) {
+    if (operations.length === 0) {
+      throw new Error('At least one operation is required');
+    }
+    if (operations.length > 100) {
+      throw new Error('Execution is limited to 100 operations per request');
+    }
+
+    const initial = this.decimal(initialValue, 'initial value');
+    if (integerOnly && !initial.isInteger()) {
       throw new Error('Non-integral initial value rejected in integer-only mode');
     }
 
-    let currentState = initialValue;
+    let current = initial;
     const transitions: TransitionStep[] = [];
+    const canonicalSteps: CanonicalTransitionStep[] = [];
 
     operations.forEach((mathOp, index) => {
-      if (integerOnly && !Number.isInteger(mathOp.value)) {
+      if (!['ADD', 'SUBTRACT', 'MULTIPLY', 'DIVIDE'].includes(mathOp.op)) {
+        throw new Error(`Unsupported operation: ${String(mathOp.op)}`);
+      }
+
+      const operand = this.decimal(mathOp.value, `operand for operation ${index + 1}`);
+      if (integerOnly && !operand.isInteger()) {
         throw new Error('Non-integral operand rejected in integer-only mode');
       }
-      if (mathOp.op === 'DIVIDE' && mathOp.value === 0) {
-        throw new Error('Division by zero is rejected');
+      if (mathOp.op === 'DIVIDE' && operand.isZero()) {
+        throw new Error('Division by zero is not permitted.');
       }
 
-      const prev = currentState;
+      const before = current;
       switch (mathOp.op) {
         case 'ADD':
-          currentState = prev + mathOp.value;
+          current = before.plus(operand);
           break;
         case 'SUBTRACT':
-          currentState = prev - mathOp.value;
+          current = before.minus(operand);
           break;
         case 'MULTIPLY':
-          currentState = prev * mathOp.value;
+          current = before.times(operand);
           break;
         case 'DIVIDE':
-          currentState = prev / mathOp.value;
+          current = before.dividedBy(operand);
           break;
       }
 
-      if (integerOnly && !Number.isInteger(currentState)) {
-        throw new Error('Non-integral result rejected in integer-only mode');
+      if (integerOnly && !current.isInteger()) {
+        throw new Error(
+          `Operation ${mathOp.op} ${this.canonicalNumber(operand)} produced a non-integer result.`
+        );
       }
 
+      const canonicalStep: CanonicalTransitionStep = {
+        index: index + 1,
+        operation: mathOp.op,
+        operand: this.canonicalNumber(operand),
+        before: this.canonicalNumber(before),
+        after: this.canonicalNumber(current)
+      };
+      canonicalSteps.push(canonicalStep);
       transitions.push({
-        stepIndex: index + 1,
-        op: mathOp.op,
-        operand: mathOp.value,
-        previousState: prev,
-        nextState: currentState
+        stepIndex: canonicalStep.index,
+        op: canonicalStep.operation,
+        operand: Number(canonicalStep.operand),
+        previousState: Number(canonicalStep.before),
+        nextState: Number(canonicalStep.after)
       });
     });
 
-    const canonicalJson = this.buildCanonicalJson(initialValue, operations, currentState);
-    const hash = this.computeSha256(canonicalJson);
-
+    const canonicalJson = this.buildCanonicalJson(initial, canonicalSteps, current);
     return {
-      initialValue,
+      initialValue: Number(this.canonicalNumber(initial)),
       operations,
       transitions,
-      finalValue: currentState,
+      finalValue: Number(this.canonicalNumber(current)),
       canonicalJson,
-      sha256Hash: hash
+      sha256Hash: this.computeSha256(canonicalJson)
     };
   }
 
-  public static buildCanonicalJson(initialValue: number, operations: MathOp[], finalValue: number): String {
-    const opsFormatted = operations.map(op => {
-      const valStr = Number.isInteger(op.value) ? op.value.toString() : op.value.toString();
-      return `{"op":"${op.op}","value":${valStr}}`;
-    }).join(',');
+  public static buildCanonicalJson(
+    initialValue: Decimal,
+    steps: CanonicalTransitionStep[],
+    finalValue: Decimal
+  ): string {
+    const stepsJson = steps.map(step =>
+      `{"index":${step.index},` +
+      `"operation":"${step.operation}",` +
+      `"operand":"${this.escapeJson(step.operand)}",` +
+      `"before":"${this.escapeJson(step.before)}",` +
+      `"after":"${this.escapeJson(step.after)}"}`
+    ).join(',');
 
-    const initStr = Number.isInteger(initialValue) ? initialValue.toString() : initialValue.toString();
-    const finalStr = Number.isInteger(finalValue) ? finalValue.toString() : finalValue.toString();
-
-    return `{"input":${initStr},"operations":[${opsFormatted}],"result":${finalStr}}`;
+    return `{"schemaVersion":"${this.schemaVersion}",` +
+      `"initialValue":"${this.escapeJson(this.canonicalNumber(initialValue))}",` +
+      `"steps":[${stepsJson}],` +
+      `"finalValue":"${this.escapeJson(this.canonicalNumber(finalValue))}",` +
+      `"disposition":"ACCEPT"}`;
   }
 
   public static computeSha256(input: string): string {
@@ -114,43 +164,60 @@ export class VekKernelService {
   }
 
   public static replay(
-    initialValue: number,
+    initialValue: number | string,
     operations: MathOp[],
     replayCount: number = 2,
     integerOnly: boolean = false
   ): ReplayComparisonResult {
-    const count = Math.min(Math.max(replayCount, 1), 10);
-    const runs: DeterministicExecutionResult[] = [];
-
-    for (let i = 0; i < count; i++) {
-      runs.push(this.executeDeterministic(initialValue, operations, integerOnly));
-    }
+    const count = Math.min(Math.max(Math.trunc(replayCount), 1), 10);
+    const runs = Array.from({ length: count }, () =>
+      this.executeDeterministic(initialValue, operations, integerOnly)
+    );
 
     const run1 = runs[0];
-    let pass = true;
-    let firstDivergenceStep: number | null = null;
-    let divergenceReason: string | null = null;
-
-    for (let i = 1; i < runs.length; i++) {
-      const run = runs[i];
-      if (run.canonicalJson !== run1.canonicalJson || run.sha256Hash !== run1.sha256Hash) {
-        pass = false;
-        divergenceReason = `Run ${i + 1} JSON or SHA-256 hash diverged from Run 1`;
-        firstDivergenceStep = i + 1;
-        break;
-      }
-    }
+    const firstDifferenceIndex = runs.findIndex(
+      run => run.canonicalJson !== run1.canonicalJson || run.sha256Hash !== run1.sha256Hash
+    );
+    const pass = firstDifferenceIndex === -1;
 
     return {
       pass,
       replayCount: count,
       runs,
       run1Final: run1.finalValue,
-      run2Final: runs.length > 1 ? runs[1].finalValue : run1.finalValue,
+      run2Final: (runs[1] ?? run1).finalValue,
       run1Hash: run1.sha256Hash,
-      run2Hash: runs.length > 1 ? runs[1].sha256Hash : run1.sha256Hash,
-      firstDivergenceStep,
-      divergenceReason
+      run2Hash: (runs[1] ?? run1).sha256Hash,
+      firstDivergenceStep: pass ? null : firstDifferenceIndex + 1,
+      divergenceReason: pass
+        ? null
+        : `Run ${firstDifferenceIndex + 1} canonical JSON or SHA-256 diverged from Run 1`
     };
+  }
+
+  private static decimal(value: number | string, label: string): Decimal {
+    let parsed: Decimal;
+    try {
+      parsed = new Decimal(value);
+    } catch {
+      throw new Error(`Invalid ${label}`);
+    }
+    if (!parsed.isFinite()) {
+      throw new Error(`${label} must be finite`);
+    }
+    return parsed;
+  }
+
+  private static canonicalNumber(value: Decimal): string {
+    return value.isZero() ? '0' : value.toFixed();
+  }
+
+  private static escapeJson(value: string): string {
+    return value
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
   }
 }
