@@ -1,0 +1,155 @@
+openapi: 3.0.3
+info:
+  title: Nexus Verification Gateway API
+  description: Production API for Nexus AI VEK deterministic claim and replay verification.
+  version: 1.0.0
+servers:
+  - url: https://nexus-verification-gateway-uc.a.run.app
+    description: Production Google Cloud Run environment
+  - url: http://localhost:8080
+    description: Local development environment
+
+paths:
+  /health:
+    get:
+      summary: Health & VEK Kernel Readiness Check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Gateway and VEK engine operational
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: HEALTHY
+                  service:
+                    type: string
+                    example: Nexus Verification Gateway
+                  version:
+                    type: string
+                    example: 1.0.0
+                  vekKernelReady:
+                    type: boolean
+                    example: true
+                  timestamp:
+                    type: string
+                    example: 2026-08-07T00:00:00Z
+
+  /v1/verify-claim:
+    post:
+      summary: Evaluate Claim with VEK Kernel
+      operationId: verifyClaim
+      security:
+        - BearerAuth: []
+        - AppCheck: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rawInput
+              properties:
+                rawInput:
+                  type: string
+                  example: "Claim statement to evaluate"
+                domain:
+                  type: string
+                  example: "Healthcare"
+                contentType:
+                  type: string
+                  example: "Medical Article"
+                integerOnly:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Claim assessment record created
+        '401':
+          description: Unauthorized auth or App Check token
+
+  /v1/evidence-record:
+    post:
+      summary: Record Canonical Evidence
+      operationId: recordEvidence
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - caseId
+                - evidenceTitle
+              properties:
+                caseId:
+                  type: string
+                  example: "NX-GW-1234"
+                evidenceTitle:
+                  type: string
+                  example: "Clinical Trial Phase III Results"
+                publisher:
+                  type: string
+                  example: "NEJM Journal"
+                isPrimarySource:
+                  type: boolean
+                  example: true
+      responses:
+        '201':
+          description: Evidence recorded with canonical SHA-256 commitment
+
+  /v1/replay-verification:
+    post:
+      summary: Multi-Run Deterministic Replay Verification
+      operationId: replayVerification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - initialValue
+                - operations
+              properties:
+                initialValue:
+                  type: number
+                  example: 7
+                operations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      op:
+                        type: string
+                        enum: [ADD, SUBTRACT, MULTIPLY, DIVIDE]
+                        example: "MULTIPLY"
+                      value:
+                        type: number
+                        example: 8
+                replayCount:
+                  type: integer
+                  example: 5
+                integerOnly:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Replay result with byte-for-byte SHA-256 comparison
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    AppCheck:
+      type: apiKey
+      in: header
+      name: X-Firebase-AppCheck

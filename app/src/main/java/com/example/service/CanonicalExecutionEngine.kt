@@ -44,18 +44,38 @@ object CanonicalExecutionEngine {
 
     const val FIXED_TEST_VECTOR_HASH = "3e408a514a78d1a28568de1e838a23e747231445276418c131603d52e013d996"
 
-    fun execute(initialValue: Double, operations: List<MathOp>): DeterministicExecutionResult {
+    fun execute(
+        initialValue: Double,
+        operations: List<MathOp>,
+        integerOnly: Boolean = false
+    ): DeterministicExecutionResult {
+        if (integerOnly && initialValue % 1.0 != 0.0) {
+            throw IllegalArgumentException("Non-integral initial value rejected in integer-only mode")
+        }
+
         var currentState = initialValue
         val transitions = mutableListOf<TransitionStep>()
 
         operations.forEachIndexed { index, mathOp ->
+            if (integerOnly && mathOp.value % 1.0 != 0.0) {
+                throw IllegalArgumentException("Non-integral operand rejected in integer-only mode")
+            }
+            if (mathOp.op == MathOpType.DIVIDE && mathOp.value == 0.0) {
+                throw ArithmeticException("Division by zero is rejected")
+            }
+
             val prev = currentState
             currentState = when (mathOp.op) {
                 MathOpType.ADD -> prev + mathOp.value
                 MathOpType.SUBTRACT -> prev - mathOp.value
                 MathOpType.MULTIPLY -> prev * mathOp.value
-                MathOpType.DIVIDE -> if (mathOp.value != 0.0) prev / mathOp.value else prev
+                MathOpType.DIVIDE -> prev / mathOp.value
             }
+
+            if (integerOnly && currentState % 1.0 != 0.0) {
+                throw IllegalArgumentException("Non-integral result rejected in integer-only mode")
+            }
+
             transitions.add(
                 TransitionStep(
                     stepIndex = index + 1,
@@ -108,9 +128,14 @@ object CanonicalExecutionEngine {
         return bytes.joinToString("") { "%02x".format(it) }
     }
 
-    fun replay(initialValue: Double, operations: List<MathOp>, replayCount: Int = 2): ReplayComparisonResult {
+    fun replay(
+        initialValue: Double,
+        operations: List<MathOp>,
+        replayCount: Int = 2,
+        integerOnly: Boolean = false
+    ): ReplayComparisonResult {
         val count = replayCount.coerceIn(1, 10)
-        val runs = (1..count).map { execute(initialValue, operations) }
+        val runs = (1..count).map { execute(initialValue, operations, integerOnly) }
 
         val run1 = runs.first()
         var pass = true
