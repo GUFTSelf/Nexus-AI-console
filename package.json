@@ -1,13 +1,8 @@
 {
-  "name": "nexus-verification-gateway",
+  "name": "nexus-monorepo",
   "version": "1.0.0",
-  "description": "Production Node.js/TypeScript backend service for Nexus AI VEK kernel verification",
-  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn src/index.ts",
-    "test": "jest"
+    "test": "jest --config backend/jest.config.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -26,7 +21,6 @@
     "jest": "^29.7.0",
     "supertest": "^6.3.4",
     "ts-jest": "^29.1.2",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5"
   }
 }

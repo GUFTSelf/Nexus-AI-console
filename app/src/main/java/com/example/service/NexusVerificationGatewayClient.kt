@@ -1,6 +1,5 @@
 package com.example.service
 
-import com.example.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
@@ -79,29 +78,22 @@ interface NexusVerificationGatewayService {
     @POST("v1/evidence-record")
     suspend fun recordEvidence(
         @Header("Authorization") bearerToken: String?,
-        @Header("X-Firebase-AppCheck") appCheckToken: String?,
         @Body request: EvidenceRecordGatewayRequest
     ): EvidenceRecordGatewayResponse
 
     @POST("v1/replay-verification")
     suspend fun replayVerification(
-        @Header("Authorization") bearerToken: String?,
-        @Header("X-Firebase-AppCheck") appCheckToken: String?,
         @Body request: ReplayGatewayRequest
     ): ReplayComparisonResult
 }
 
 object NexusVerificationGatewayClient {
-    val serviceOrNull: NexusVerificationGatewayService? by lazy {
-        val configuredUrl = BuildConfig.NEXUS_GATEWAY_BASE_URL.trim()
-        if (configuredUrl.isBlank() || configuredUrl.equals("DISABLED", ignoreCase = true)) {
-            return@lazy null
-        }
-        val normalizedUrl = if (configuredUrl.endsWith('/')) configuredUrl else "$configuredUrl/"
-        if (!BuildConfig.DEBUG && !normalizedUrl.startsWith("https://")) return@lazy null
 
+    private const val BASE_URL = "https://nexus-verification-gateway-uc.a.run.app/"
+
+    val service: NexusVerificationGatewayService by lazy {
         Retrofit.Builder()
-            .baseUrl(normalizedUrl)
+            .baseUrl(BASE_URL)
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
             .create(NexusVerificationGatewayService::class.java)
