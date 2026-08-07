@@ -44,6 +44,7 @@ fun AuthEnrollmentModal(
     var selectedTier by remember { mutableStateOf(currentUser?.tier ?: AppTier.PRO) }
     var selectedAuthTab by remember { mutableStateOf(0) } // 0: Google Sign-In / Enrollment, 1: Email / Password, 2: Choose Tier
     var isAuthenticating by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
 
     var emailInput by remember { mutableStateOf(currentUser?.email ?: "") }
     var passwordInput by remember { mutableStateOf("") }
@@ -116,6 +117,9 @@ fun AuthEnrollmentModal(
                         onSignOut = {
                             viewModel.signOut()
                             Toast.makeText(context, "Signed out from Nexus AI", Toast.LENGTH_SHORT).show()
+                        },
+                        onDeleteAccount = {
+                            showDeleteConfirmation = true
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -207,6 +211,38 @@ fun AuthEnrollmentModal(
             }
         }
     }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Delete Nexus account?") },
+            text = {
+                Text("This deletes the signed-in account and clears verification cases and audit records stored on this device. This action cannot be undone.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        scope.launch {
+                            val result = viewModel.deleteAccountAndLocalData()
+                            Toast.makeText(
+                                context,
+                                if (result.isSuccess) "Account and local records deleted" else "Sign in again, then retry account deletion",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                ) {
+                    Text("Delete", color = StatusUnsupported)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 // --------------------------------------------------
@@ -216,7 +252,8 @@ fun AuthEnrollmentModal(
 private fun AccountStatusCard(
     user: UserProfile,
     onUpgradeTier: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onDeleteAccount: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -284,6 +321,9 @@ private fun AccountStatusCard(
                 }
                 TextButton(onClick = onSignOut) {
                     Text(text = "Sign Out", fontSize = 11.sp, color = StatusUnsupported)
+                }
+                TextButton(onClick = onDeleteAccount) {
+                    Text(text = "Delete Account", fontSize = 11.sp, color = StatusUnsupported)
                 }
             }
         }

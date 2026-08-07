@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.NexusViewModel
 import com.example.ui.theme.*
+import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -284,7 +285,12 @@ private data class ClaimEvaluationResult(
 
 private fun evaluateClaimOffline(claim: String): ClaimEvaluationResult {
     // Offline verification policy: Without authenticated online evidence or cryptographically signed local proof, claim is INCONCLUSIVE
-    val json = """{"claim":"${claim.replace("\"", "\\\"")}","evidence":"UNAUTHENTICATED","status":"INCONCLUSIVE","policy":"VEK-OFFLINE-POLICY-001"}"""
+    val json = JSONObject()
+        .put("claim", claim)
+        .put("evidence", "UNAUTHENTICATED")
+        .put("status", "INCONCLUSIVE")
+        .put("policy", "VEK-OFFLINE-POLICY-001")
+        .toString()
     return ClaimEvaluationResult(
         claimText = claim,
         statusLabel = "INCONCLUSIVE",

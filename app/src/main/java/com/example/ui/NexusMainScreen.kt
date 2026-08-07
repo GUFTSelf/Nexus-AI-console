@@ -1,5 +1,6 @@
 package com.example.ui
 
+import com.example.BuildConfig
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -125,7 +126,7 @@ fun NexusMainScreen(
                                         color = OffWhiteText
                                     )
                                     Text(
-                                        text = currentUserProfile?.email ?: "user@nexusai.io",
+                                        text = currentUserProfile?.email ?: "Local mode",
                                         fontSize = 9.sp,
                                         color = MutedText
                                     )
@@ -139,7 +140,7 @@ fun NexusMainScreen(
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = currentUserProfile?.tier?.displayName?.uppercase() ?: "PRO",
+                                    text = currentUserProfile?.tier?.displayName?.uppercase() ?: "OFFLINE",
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Black,
                                     color = ElectricLime
@@ -149,18 +150,20 @@ fun NexusMainScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Button(
-                            onClick = {
-                                viewModel.toggleAuthDialog(true)
-                                scope.launch { drawerState.close() }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = ElectricLime, contentColor = CyberBlack),
-                            shape = RoundedCornerShape(6.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Google Sign In & Tiers", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        if (BuildConfig.DEBUG) {
+                            Button(
+                                onClick = {
+                                    viewModel.toggleAuthDialog(true)
+                                    scope.launch { drawerState.close() }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = ElectricLime, contentColor = CyberBlack),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(text = "Development Sign In & Tiers", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
 
@@ -324,15 +327,17 @@ fun NexusMainScreen(
                         }
                     )
 
-                    DrawerItem(
-                        title = AppDestination.LICENSING.title,
-                        icon = Icons.Default.VerifiedUser,
-                        isSelected = currentDestination == AppDestination.LICENSING,
-                        onClick = {
-                            viewModel.navigateTo(AppDestination.LICENSING)
-                            scope.launch { drawerState.close() }
-                        }
-                    )
+                    if (BuildConfig.DEBUG) {
+                        DrawerItem(
+                            title = AppDestination.LICENSING.title,
+                            icon = Icons.Default.VerifiedUser,
+                            isSelected = currentDestination == AppDestination.LICENSING,
+                            onClick = {
+                                viewModel.navigateTo(AppDestination.LICENSING)
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -344,7 +349,8 @@ fun NexusMainScreen(
                     onToggleEnterpriseMode = { viewModel.toggleEnterpriseMode(it) },
                     onOpenDrawer = { scope.launch { drawerState.open() } },
                     currentUser = currentUserProfile,
-                    onOpenAuthDialog = { viewModel.toggleAuthDialog(true) }
+                    onOpenAuthDialog = { viewModel.toggleAuthDialog(true) },
+                    authEnabled = BuildConfig.DEBUG
                 )
             },
             containerColor = CyberBlack
@@ -364,7 +370,9 @@ fun NexusMainScreen(
                         onNavigateToConsole = { viewModel.navigateTo(AppDestination.CONSOLE) },
                         onNavigateToEnterprise = { viewModel.navigateTo(AppDestination.ENTERPRISE_WORKSPACE) },
                         onNavigateToQvek = { viewModel.navigateTo(AppDestination.QVEK_QUANTUM) },
-                        onNavigateToLicensing = { viewModel.navigateTo(AppDestination.LICENSING) },
+                        onNavigateToLicensing = {
+                            viewModel.navigateTo(if (BuildConfig.DEBUG) AppDestination.LICENSING else AppDestination.CONSOLE)
+                        },
                         onNavigateToDeterministic = { viewModel.navigateTo(AppDestination.DETERMINISTIC_EXECUTION) },
                         onNavigateToReplay = { viewModel.navigateTo(AppDestination.REPLAY_COMPARISON) },
                         onNavigateToClaims = { viewModel.navigateTo(AppDestination.CLAIM_VERIFICATION) }
@@ -398,18 +406,27 @@ fun NexusMainScreen(
                         auditLogs = allAuditLogs
                     )
                     AppDestination.QVEK_QUANTUM -> QvekQuantumScreen()
-                    AppDestination.LICENSING -> LicensingScreen(
-                        viewModel = viewModel
-                    )
+                    AppDestination.LICENSING -> if (BuildConfig.DEBUG) {
+                        LicensingScreen(viewModel = viewModel)
+                    } else {
+                        LandingScreen(
+                            onNavigateToConsole = { viewModel.navigateTo(AppDestination.CONSOLE) },
+                            onNavigateToEnterprise = { viewModel.navigateTo(AppDestination.ENTERPRISE_WORKSPACE) },
+                            onNavigateToQvek = { viewModel.navigateTo(AppDestination.QVEK_QUANTUM) },
+                            onNavigateToLicensing = { viewModel.navigateTo(AppDestination.CONSOLE) }
+                        )
+                    }
                     AppDestination.ABOUT -> LandingScreen(
                         onNavigateToConsole = { viewModel.navigateTo(AppDestination.CONSOLE) },
                         onNavigateToEnterprise = { viewModel.navigateTo(AppDestination.ENTERPRISE_WORKSPACE) },
                         onNavigateToQvek = { viewModel.navigateTo(AppDestination.QVEK_QUANTUM) },
-                        onNavigateToLicensing = { viewModel.navigateTo(AppDestination.LICENSING) }
+                        onNavigateToLicensing = {
+                            viewModel.navigateTo(if (BuildConfig.DEBUG) AppDestination.LICENSING else AppDestination.CONSOLE)
+                        }
                     )
                 }
 
-                if (showAuthDialog) {
+                if (BuildConfig.DEBUG && showAuthDialog) {
                     AuthEnrollmentModal(
                         viewModel = viewModel,
                         onDismiss = { viewModel.toggleAuthDialog(false) }

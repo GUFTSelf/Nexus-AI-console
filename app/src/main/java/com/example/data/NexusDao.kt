@@ -28,6 +28,9 @@ interface NexusDao {
     @Query("DELETE FROM verification_cases WHERE caseId = :caseId")
     suspend fun deleteCase(caseId: String)
 
+    @Query("DELETE FROM verification_cases")
+    suspend fun deleteAllCases()
+
     @Query("SELECT * FROM verification_policies")
     fun getAllPolicies(): Flow<List<VerificationPolicy>>
 
