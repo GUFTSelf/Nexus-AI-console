@@ -167,10 +167,60 @@ fun NexusMainScreen(
                     HorizontalDivider(color = MutedBorder, modifier = Modifier.padding(vertical = 8.dp))
 
                     Text(
-                        text = "CORE OPERATIONS",
+                        text = "OFFLINE VERIFICATION SUITE",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = ElectricLime,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    DrawerItem(
+                        title = AppDestination.DETERMINISTIC_EXECUTION.title,
+                        icon = Icons.Default.Calculate,
+                        isSelected = currentDestination == AppDestination.DETERMINISTIC_EXECUTION,
+                        onClick = {
+                            viewModel.navigateTo(AppDestination.DETERMINISTIC_EXECUTION)
+                            scope.launch { drawerState.close() }
+                        }
+                    )
+
+                    DrawerItem(
+                        title = AppDestination.REPLAY_COMPARISON.title,
+                        icon = Icons.Default.Repeat,
+                        isSelected = currentDestination == AppDestination.REPLAY_COMPARISON,
+                        onClick = {
+                            viewModel.navigateTo(AppDestination.REPLAY_COMPARISON)
+                            scope.launch { drawerState.close() }
+                        }
+                    )
+
+                    DrawerItem(
+                        title = AppDestination.CLAIM_VERIFICATION.title,
+                        icon = Icons.Default.VerifiedUser,
+                        isSelected = currentDestination == AppDestination.CLAIM_VERIFICATION,
+                        onClick = {
+                            viewModel.navigateTo(AppDestination.CLAIM_VERIFICATION)
+                            scope.launch { drawerState.close() }
+                        }
+                    )
+
+                    DrawerItem(
+                        title = AppDestination.LOCAL_HISTORY.title,
+                        icon = Icons.Default.History,
+                        isSelected = currentDestination == AppDestination.LOCAL_HISTORY,
+                        onClick = {
+                            viewModel.navigateTo(AppDestination.LOCAL_HISTORY)
+                            scope.launch { drawerState.close() }
+                        }
+                    )
+
+                    HorizontalDivider(color = MutedBorder, modifier = Modifier.padding(vertical = 8.dp))
+
+                    Text(
+                        text = "CORE OPERATIONS",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = OffWhiteText,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
 
@@ -306,11 +356,18 @@ fun NexusMainScreen(
                     .background(CyberBlack)
             ) {
                 when (currentDestination) {
+                    AppDestination.DETERMINISTIC_EXECUTION -> DeterministicExecutionScreen(viewModel = viewModel)
+                    AppDestination.REPLAY_COMPARISON -> ReplayComparisonScreen(viewModel = viewModel)
+                    AppDestination.CLAIM_VERIFICATION -> ClaimVerificationScreen(viewModel = viewModel)
+                    AppDestination.LOCAL_HISTORY -> LocalHistoryScreen(viewModel = viewModel)
                     AppDestination.LANDING -> LandingScreen(
                         onNavigateToConsole = { viewModel.navigateTo(AppDestination.CONSOLE) },
                         onNavigateToEnterprise = { viewModel.navigateTo(AppDestination.ENTERPRISE_WORKSPACE) },
                         onNavigateToQvek = { viewModel.navigateTo(AppDestination.QVEK_QUANTUM) },
-                        onNavigateToLicensing = { viewModel.navigateTo(AppDestination.LICENSING) }
+                        onNavigateToLicensing = { viewModel.navigateTo(AppDestination.LICENSING) },
+                        onNavigateToDeterministic = { viewModel.navigateTo(AppDestination.DETERMINISTIC_EXECUTION) },
+                        onNavigateToReplay = { viewModel.navigateTo(AppDestination.REPLAY_COMPARISON) },
+                        onNavigateToClaims = { viewModel.navigateTo(AppDestination.CLAIM_VERIFICATION) }
                     )
                     AppDestination.CONSOLE -> ConsoleScreen(
                         viewModel = viewModel

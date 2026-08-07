@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.model.AuditLogEntry
+import com.example.model.LocalExecutionRecord
 import com.example.model.VerificationCase
 import com.example.model.VerificationPolicy
 import kotlinx.coroutines.CoroutineScope
@@ -13,8 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [VerificationCase::class, VerificationPolicy::class, AuditLogEntry::class],
-    version = 1,
+    entities = [VerificationCase::class, VerificationPolicy::class, AuditLogEntry::class, LocalExecutionRecord::class],
+    version = 2,
     exportSchema = false
 )
 abstract class NexusDatabase : RoomDatabase() {
@@ -31,6 +32,7 @@ abstract class NexusDatabase : RoomDatabase() {
                     NexusDatabase::class.java,
                     "nexus_ai_vek_db"
                 )
+                .fallbackToDestructiveMigration()
                 .addCallback(DatabaseCallback(context))
                 .build()
                 INSTANCE = instance

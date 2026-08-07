@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.model.AuditLogEntry
+import com.example.model.LocalExecutionRecord
 import com.example.model.VerificationCase
 import com.example.model.VerificationPolicy
 import kotlinx.coroutines.flow.Flow
@@ -41,4 +42,22 @@ interface NexusDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAuditLog(log: AuditLogEntry)
+
+    @Query("SELECT * FROM local_execution_records ORDER BY timestamp DESC")
+    fun getAllExecutionRecords(): Flow<List<LocalExecutionRecord>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExecutionRecord(record: LocalExecutionRecord)
+
+    @Query("DELETE FROM local_execution_records WHERE id = :id")
+    suspend fun deleteExecutionRecord(id: String)
+
+    @Query("DELETE FROM local_execution_records")
+    suspend fun deleteAllExecutionRecords()
+
+    @Query("DELETE FROM verification_cases")
+    suspend fun deleteAllVerificationCases()
+
+    @Query("DELETE FROM audit_logs")
+    suspend fun deleteAllAuditLogs()
 }

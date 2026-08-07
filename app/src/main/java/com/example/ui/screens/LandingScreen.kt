@@ -27,6 +27,9 @@ fun LandingScreen(
     onNavigateToEnterprise: () -> Unit,
     onNavigateToQvek: () -> Unit,
     onNavigateToLicensing: () -> Unit,
+    onNavigateToDeterministic: () -> Unit = {},
+    onNavigateToReplay: () -> Unit = {},
+    onNavigateToClaims: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -64,49 +67,100 @@ fun LandingScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "AI can generate anything.\nNexus verifies what matters.",
+                    text = "Nexus AI\nPowered by VEK",
                     color = OffWhiteText,
-                    fontSize = 24.sp,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Black,
                     textAlign = TextAlign.Center,
-                    lineHeight = 30.sp
+                    lineHeight = 32.sp
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Nexus AI uses the VEK trust layer to evaluate claims, enforce verification policies, expose uncertainty, and produce inspectable decision records.",
+                    text = "Offline-first deterministic execution engine, byte-for-byte replay verification, and claim assessment pipeline.",
                     color = MutedText,
                     fontSize = 13.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 18.sp
                 )
+            }
+        }
 
-                Spacer(modifier = Modifier.height(20.dp))
+        // Three Core Modes Selection Grid
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "SELECT VERIFICATION MODE",
+                    color = ElectricLime,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
 
-                Row(
+                // Mode 1: Deterministic Execution
+                Card(
+                    onClick = onNavigateToDeterministic,
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    colors = CardDefaults.cardColors(containerColor = CyberSurface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, ElectricLime.copy(alpha = 0.6f)),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Button(
-                        onClick = onNavigateToConsole,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = ElectricLime, contentColor = CyberBlack),
-                        shape = RoundedCornerShape(8.dp)
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Verify a Claim", fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(imageVector = Icons.Default.Calculate, contentDescription = null, tint = ElectricLime, modifier = Modifier.size(28.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Deterministic Execution", color = OffWhiteText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "Sequential arithmetic transitions, canonical JSON & SHA-256 commitment.", color = MutedText, fontSize = 11.sp)
+                        }
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = ElectricLime)
                     }
+                }
 
-                    OutlinedButton(
-                        onClick = onNavigateToEnterprise,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = CyberCyan),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, CyberCyan),
-                        shape = RoundedCornerShape(8.dp)
+                // Mode 2: Replay Comparison
+                Card(
+                    onClick = onNavigateToReplay,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = CyberSurface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CyberCyan.copy(alpha = 0.6f)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Enterprise VEK", fontWeight = FontWeight.Bold)
+                        Icon(imageVector = Icons.Default.Repeat, contentDescription = null, tint = CyberCyan, modifier = Modifier.size(28.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Replay Comparison", color = OffWhiteText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "Run 1 to 10 replays to compare canonical records and detect divergence.", color = MutedText, fontSize = 11.sp)
+                        }
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = CyberCyan)
+                    }
+                }
+
+                // Mode 3: Claim Verification
+                Card(
+                    onClick = onNavigateToClaims,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = CyberSurface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MutedBorder),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(imageVector = Icons.Default.VerifiedUser, contentDescription = null, tint = OffWhiteText, modifier = Modifier.size(28.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Claim Verification", color = OffWhiteText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "Assess claims against non-fabrication policy & authenticated evidence rules.", color = MutedText, fontSize = 11.sp)
+                        }
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = OffWhiteText)
                     }
                 }
             }

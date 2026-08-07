@@ -115,3 +115,19 @@ data class AuditLogEntry(
     val details: String,
     val traceHash: String
 )
+
+@Entity(tableName = "local_execution_records")
+data class LocalExecutionRecord(
+    @PrimaryKey val id: String = java.util.UUID.randomUUID().toString(),
+    val timestamp: Long = System.currentTimeMillis(),
+    val mode: String, // "DETERMINISTIC_EXECUTION", "REPLAY_COMPARISON", "CLAIM_VERIFICATION"
+    val title: String,
+    val initialValue: Double = 0.0,
+    val finalValue: Double = 0.0,
+    val canonicalJson: String,
+    val sha256Hash: String,
+    val replayCount: Int = 1,
+    val passStatus: Boolean = true,
+    val rawInput: String = ""
+)
+

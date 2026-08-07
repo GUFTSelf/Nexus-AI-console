@@ -16,6 +16,10 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 enum class AppDestination(val title: String) {
+    DETERMINISTIC_EXECUTION("Deterministic Execution"),
+    REPLAY_COMPARISON("Replay Comparison"),
+    CLAIM_VERIFICATION("Claim Verification"),
+    LOCAL_HISTORY("Local History"),
     LANDING("Overview"),
     CONSOLE("AI Console"),
     RESULTS("Verification Report"),
@@ -135,6 +139,75 @@ class NexusViewModel(application: Application) : AndroidViewModel(application) {
 
     val allAuditLogs: StateFlow<List<AuditLogEntry>> = dao.getAllAuditLogs()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allExecutionRecords: StateFlow<List<LocalExecutionRecord>> = dao.getAllExecutionRecords()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Offline Mode States (Deterministic Execution & Replay)
+    private val _deterministicResult = MutableStateFlow<DeterministicExecutionResult?>(null)
+    val deterministicResult: StateFlow<DeterministicExecutionResult?> = _deterministicResult.asStateFlow()
+
+    private val _replayResult = MutableStateFlow<ReplayComparisonResult?>(null)
+    val replayResult: StateFlow<ReplayComparisonResult?> = _replayResult.asStateFlow()
+
+    fun executeDeterministic(initialValue: Double, operations: List<MathOp>) {
+        viewModelScope.launch {
+            val result = CanonicalExecutionEngine.execute(initialValue, operations)
+            _deterministicResult.value = result
+
+            // Save execution record
+            val record = LocalExecutionRecord(
+                mode = "DETERMINISTIC_EXECUTION",
+                title = "Deterministic Execution (Start: $initialValue, ${operations.size} ops)",
+                initialValue = initialValue,
+                finalValue = result.finalValue,
+                canonicalJson = result.canonicalJson,
+                sha256Hash = result.sha256Hash,
+                replayCount = 1,
+                passStatus = true,
+                rawInput = "Initial: $initialValue, Ops: ${operations.joinToString { "${it.op} ${it.value}" }}"
+            )
+            dao.insertExecutionRecord(record)
+        }
+    }
+
+    fun executeReplay(initialValue: Double, operations: List<MathOp>, replayCount: Int) {
+        viewModelScope.launch {
+            val result = CanonicalExecutionEngine.replay(initialValue, operations, replayCount)
+            _replayResult.value = result
+
+            val record = LocalExecutionRecord(
+                mode = "REPLAY_COMPARISON",
+                title = "Replay Comparison ($replayCount Runs, ${if (result.pass) "PASS" else "FAIL"})",
+                initialValue = initialValue,
+                finalValue = result.run1Final,
+                canonicalJson = result.runs.firstOrNull()?.canonicalJson ?: "",
+                sha256Hash = result.run1Hash,
+                replayCount = replayCount,
+                passStatus = result.pass,
+                rawInput = "Replays: $replayCount, Operations: ${operations.joinToString { "${it.op} ${it.value}" }}"
+            )
+            dao.insertExecutionRecord(record)
+        }
+    }
+
+    fun deleteExecutionRecord(id: String) {
+        viewModelScope.launch {
+            dao.deleteExecutionRecord(id)
+        }
+    }
+
+    fun deleteAllLocalData() {
+        viewModelScope.launch {
+            dao.deleteAllExecutionRecords()
+            dao.deleteAllVerificationCases()
+            dao.deleteAllAuditLogs()
+            _selectedCase.value = null
+            _deterministicResult.value = null
+            _replayResult.value = null
+        }
+    }
+
 
     // Active Selected Case
     private val _selectedCase = MutableStateFlow<VerificationCase?>(null)
