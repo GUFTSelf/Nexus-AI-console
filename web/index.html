@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101d2b">
+  <meta name="description" content="A connected business community for stories, visibility, referrals, and growth.">
+  <title>BEN — Business Ecosystem Network</title>
+  <style>
+    :root{--ink:#142333;--muted:#647487;--paper:#f5f7f8;--card:#fff;--line:#e3e9ee;--navy:#101d2b;--blue:#326d91;--teal:#68b6a5;--gold:#e6b86b;--radius:20px;--shadow:0 16px 42px rgba(16,29,43,.09)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button,a,.button{cursor:pointer}.wrap{width:min(1160px,calc(100% - 40px));margin:auto}.topbar{background:var(--navy);color:#eaf1f6;font-size:13px}.topbar .wrap{display:flex;justify-content:space-between;gap:16px;padding:9px 0}.topbar a{color:#b8d8e7}.header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}.nav{height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;align-items:center;gap:12px;font-weight:850;letter-spacing:.02em}.brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:var(--navy);color:#fff;font-size:17px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.16em;font-weight:700}.links{display:flex;gap:24px;align-items:center;color:#435466;font-size:14px;font-weight:650}.links a:hover{color:var(--blue)}.actions{display:flex;gap:10px;align-items:center}.btn{border:0;border-radius:999px;padding:12px 18px;font-weight:750;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s}.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#245675;transform:translateY(-1px)}.btn-outline{border:1px solid #cbd6df;background:#fff;color:var(--ink)}.btn-dark{background:var(--navy);color:#fff}.menu{display:none;background:none;border:0;font-size:25px;color:var(--ink)}
+    .hero{background:radial-gradient(circle at 78% 22%,rgba(104,182,165,.24),transparent 28%),linear-gradient(120deg,#101d2b,#1c3d55 68%,#285b70);color:#fff;padding:76px 0 70px;overflow:hidden}.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:48px;align-items:center}.eyebrow{font-size:12px;letter-spacing:.19em;text-transform:uppercase;font-weight:800;color:var(--teal)}h1{font-size:clamp(42px,6vw,68px);line-height:1.04;letter-spacing:-.045em;margin:18px 0}.hero p{font-size:18px;max-width:610px;color:#d1dde6}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.hero .btn-outline{background:transparent;color:#fff;border-color:#8296a7}.hero-note{font-size:12px;color:#aebfca;margin-top:18px}.hero-art{min-height:360px;position:relative;display:grid;place-items:center}.orbit{width:min(350px,80vw);aspect-ratio:1;border:1px solid rgba(255,255,255,.3);border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle,rgba(104,182,165,.18),transparent 63%)}.orbit:before,.orbit:after{content:"";position:absolute;border:1px solid rgba(255,255,255,.2);border-radius:50%}.orbit:before{inset:35px}.orbit:after{inset:76px}.core{z-index:1;width:124px;height:124px;border-radius:36px;display:grid;place-items:center;text-align:center;background:linear-gradient(145deg,#76c4b2,#2c7182);box-shadow:0 18px 60px rgba(0,0,0,.25);font-size:28px;font-weight:900}.node{position:absolute;background:#fff;color:var(--ink);padding:10px 14px;border-radius:14px;font-size:12px;font-weight:800;box-shadow:var(--shadow)}.n1{top:8%;left:35%}.n2{right:-2%;top:43%}.n3{bottom:9%;left:35%}.n4{left:-2%;top:43%}
+    .stats{background:#fff;border-bottom:1px solid var(--line)}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);padding:24px 0}.stat{padding:4px 24px;border-right:1px solid var(--line)}.stat:first-child{padding-left:0}.stat:last-child{border:0}.stat strong{display:block;font-size:22px}.stat span{font-size:13px;color:var(--muted)}
+    section{padding:78px 0}.section-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:30px}.kicker{font-size:11px;text-transform:uppercase;letter-spacing:.17em;color:var(--blue);font-weight:850}.section-head h2{font-size:clamp(29px,4vw,42px);letter-spacing:-.035em;line-height:1.12;margin:8px 0}.section-head p{max-width:520px;color:var(--muted);margin:0}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 4px 18px rgba(16,29,43,.035)}.episode-art{height:190px;padding:22px;display:flex;align-items:end;position:relative;color:#fff;background:linear-gradient(135deg,#254a62,#5e9a91)}.episode-art.alt{background:linear-gradient(135deg,#473b5f,#9a7b72)}.episode-art.gold{background:linear-gradient(135deg,#715c3e,#c69b5d)}.episode-art:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 25%,rgba(255,255,255,.23),transparent 26%)}.episode-number{position:absolute;right:20px;top:14px;font-size:44px;font-weight:900;opacity:.35}.episode-art b{z-index:1;font-size:21px;max-width:240px;line-height:1.1}.card-body{padding:22px}.meta{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--blue);font-weight:800}.card h3{margin:8px 0;font-size:20px;line-height:1.25}.card p{color:var(--muted);font-size:14px;margin:8px 0 18px}.card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}.pill{background:#edf4f5;color:#326d72;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}.disabled{opacity:.55;cursor:not-allowed}
+    .searchbar{display:flex;gap:10px;max-width:440px}.searchbar input{min-width:0;flex:1;border:1px solid var(--line);background:#fff;border-radius:999px;padding:12px 16px;outline:none}.searchbar input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(50,109,145,.12)}.directory{background:#edf2f4}.biz-card{padding:22px}.biz-top{display:flex;align-items:center;gap:13px}.biz-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#e9f1f2;font-size:22px}.biz-card h3{margin:0;font-size:18px}.biz-card .category{font-size:12px;color:var(--muted)}.biz-card p{margin:16px 0}.biz-card .card-foot{margin-top:18px}.empty{grid-column:1/-1;text-align:center;padding:34px;color:var(--muted);background:#fff;border:1px dashed #cbd6df;border-radius:16px}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.step{padding:22px;border-radius:18px;background:#fff;border:1px solid var(--line)}.step-num{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#eaf2f3;color:var(--blue);font-weight:900}.step h3{font-size:17px;margin:14px 0 6px}.step p{font-size:13px;color:var(--muted);margin:0}
+    .join{background:var(--navy);color:#fff}.join-grid{display:grid;grid-template-columns:1fr .85fr;gap:42px;align-items:center}.join h2{font-size:clamp(32px,4vw,46px);line-height:1.1;letter-spacing:-.04em;margin:12px 0}.join p{color:#c2d0da}.join-list{display:grid;gap:12px;margin-top:24px}.join-list span{display:flex;gap:10px;align-items:center;color:#e3edf2}.check{color:#83c7b6;font-weight:900}.form-card{background:#fff;color:var(--ink);padding:26px;border-radius:22px;box-shadow:var(--shadow)}.form-card h3{margin:0 0 5px;font-size:22px}.form-card>p{color:var(--muted);font-size:13px;margin:0 0 18px}.field{display:grid;gap:6px;margin:12px 0}.field label{font-size:12px;font-weight:800;color:#45586a}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--ink);background:#fff}.field textarea{min-height:80px;resize:vertical}.form-card .btn{width:100%;margin-top:8px}.notice{font-size:11px;color:#758596;margin-top:12px}.toast{display:none;margin-top:12px;padding:11px;border-radius:10px;background:#eef7f3;color:#24634e;font-size:13px}.toast.show{display:block}
+    .footer{background:#0b1621;color:#d4dfe7;padding:36px 0}.footer-grid{display:flex;justify-content:space-between;gap:24px;align-items:center}.footer p{font-size:12px;color:#9eafbc;margin:6px 0}.footer-links{display:flex;gap:18px;font-size:13px;color:#c3d0d9}
+    @media(max-width:850px){.links{display:none;position:absolute;left:0;right:0;top:76px;padding:18px 24px;background:#fff;border-bottom:1px solid var(--line);flex-direction:column;align-items:flex-start}.links.open{display:flex}.menu{display:block}.actions .btn-outline{display:none}.hero-grid,.join-grid{grid-template-columns:1fr}.hero{padding:58px 0}.hero-art{min-height:300px}.grid3{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:repeat(2,1fr)}.section-head{align-items:flex-start;flex-direction:column}.stats-grid{grid-template-columns:repeat(2,1fr);gap:18px}.stat:nth-child(2){border:0}.stat:nth-child(3){padding-left:0}}
+    @media(max-width:560px){.wrap{width:min(100% - 28px,1160px)}.topbar .wrap{font-size:11px}.topbar .wrap span:last-child{display:none}.nav{height:68px}.links{top:68px}.brand-mark{width:38px;height:38px}.actions .btn{padding:10px 13px;font-size:12px}.hero{padding:48px 0}.hero p{font-size:16px}.hero-art{min-height:250px}.orbit{width:245px}.core{width:94px;height:94px;border-radius:28px;font-size:22px}.node{font-size:10px;padding:7px 9px}.n2{right:-4%}.n4{left:-4%}section{padding:58px 0}.grid3{grid-template-columns:1fr}.episode-art{height:165px}.steps{grid-template-columns:1fr 1fr}.step{padding:16px}.stats-grid{padding:18px 0}.stat{padding:4px 12px}.stat strong{font-size:19px}.footer-grid{align-items:flex-start;flex-direction:column}.footer-links{flex-wrap:wrap}}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap"><span>THE LOCAL BUSINESS CONNECTION NETWORK</span><span>Stories • Visibility • Referrals • Growth</span></div></div>
+  <header class="header">
+    <div class="wrap nav">
+      <a class="brand" href="#home" aria-label="BEN home"><span class="brand-mark">BEN</span><span>BUSINESS ECOSYSTEM<small>NETWORK</small></span></a>
+      <nav class="links" id="navLinks" aria-label="Main navigation">
+        <a href="#podcast">Podcast</a><a href="#directory">Find a Business</a><a href="#how">How It Works</a><a href="#join">Join the Network</a>
+      </nav>
+      <div class="actions"><a class="btn btn-outline" href="#directory">Explore businesses</a><a class="btn btn-primary" href="#join">Join BEN</a><button class="menu" id="menuBtn" aria-label="Open navigation" aria-expanded="false">☰</button></div>
+    </div>
+  </header>
+  <main id="home">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">A connected ecosystem for local business</div>
+          <h1>Good businesses deserve to be <span style="color:#83c7b6">seen.</span></h1>
+          <p>Meet the people behind the businesses. Discover local services, hear real stories, and build relationships that help your community grow.</p>
+          <div class="hero-actions"><a class="btn btn-primary" href="#podcast">Explore the podcast <span aria-hidden="true">↗</span></a><a class="btn btn-outline" href="#join">Feature your business</a></div>
+          <div class="hero-note">A community-first platform concept by Nexus AI.</div>
+        </div>
+        <div class="hero-art" aria-label="Illustration of connected business services">
+          <div class="orbit"><div class="core">BEN</div><span class="node n1">PODCAST</span><span class="node n2">DISCOVERY</span><span class="node n3">COMMUNITY</span><span class="node n4">GROWTH</span></div>
+        </div>
+      </div>
+    </section>
+    <div class="stats"><div class="wrap stats-grid"><div class="stat"><strong>One network</strong><span>Stories, listings, and connections</span></div><div class="stat"><strong>Local first</strong><span>Built to spotlight small business</span></div><div class="stat"><strong>Shared visibility</strong><span>Content that travels across channels</span></div><div class="stat"><strong>Growth together</strong><span>Relationships before transactions</span></div></div></div>
+    <section id="podcast">
+      <div class="wrap">
+        <div class="section-head"><div><div class="kicker">BEN Podcast</div><h2>Conversations that move business forward.</h2></div><p>Owner stories, practical lessons, and local ideas. Each episode can connect listeners directly to the business featured.</p></div>
+        <div class="grid3">
+          <article class="card"><div class="episode-art"><span class="episode-number">01</span><b>The people behind the business</b></div><div class="card-body"><div class="meta">Founder stories · Interview</div><h3>Why I started</h3><p>A conversation format that lets owners share what they do, who they serve, and what they have learned.</p><div class="card-foot"><span>Episode format preview</span><span class="pill">Coming soon</span></div></div></article>
+          <article class="card"><div class="episode-art alt"><span class="episode-number">02</span><b>From first customer to steady growth</b></div><div class="card-body"><div class="meta">Business growth · Roundtable</div><h3>Lessons from the field</h3><p>Practical conversations about customer service, marketing, operations, and building trust.</p><div class="card-foot"><span>Episode format preview</span><span class="pill">Coming soon</span></div></div></article>
+          <article class="card"><div class="episode-art gold"><span class="episode-number">03</span><b>Neighbors helping neighbors</b></div><div class="card-body"><div class="meta">Community · Spotlight</div><h3>Make local connections</h3><p>Introduce complementary businesses and create opportunities for referrals and collaboration.</p><div class="card-foot"><span>Episode format preview</span><span class="pill">Coming soon</span></div></div></article>
+        </div>
+        <p class="notice">These are sample episode concepts, not published recordings. Audio/video hosting and publishing will be connected in a later release.</p>
+      </div>
+    </section>
+    <section class="directory" id="directory">
+      <div class="wrap">
+        <div class="section-head"><div><div class="kicker">Business directory</div><h2>Find your next local connection.</h2></div><div class="searchbar"><input id="businessSearch" type="search" placeholder="Search a service or category" aria-label="Search businesses"><button class="btn btn-dark" id="searchBtn">Search</button></div></div>
+        <div class="grid3" id="businessGrid">
+          <article class="card biz-card" data-search="food restaurant cafe dining"><div class="biz-top"><div class="biz-icon">☕</div><div><h3>Your café or restaurant</h3><div class="category">Food & hospitality · Sample listing</div></div></div><p>A place for a local owner to showcase their menu, story, hours, and contact details.</p><div class="card-foot"><span>Business profile preview</span><span class="pill">Example</span></div></article>
+          <article class="card biz-card" data-search="home repair contractor services"><div class="biz-top"><div class="biz-icon">🛠️</div><div><h3>Your home service business</h3><div class="category">Home services · Sample listing</div></div></div><p>Help customers understand your services and make it easy to request a quote.</p><div class="card-foot"><span>Business profile preview</span><span class="pill">Example</span></div></article>
+          <article class="card biz-card" data-search="creative design retail shop"><div class="biz-top"><div class="biz-icon">✦</div><div><h3>Your shop or creative studio</h3><div class="category">Retail & creative · Sample listing</div></div></div><p>Feature products, explain what makes your business unique, and connect with new customers.</p><div class="card-foot"><span>Business profile preview</span><span class="pill">Example</span></div></article>
+        </div>
+        <div class="empty" id="noResults" hidden>No sample categories match that search. Try another term.</div>
+        <p class="notice">The directory currently contains illustrative placeholders only. No real businesses are listed yet.</p>
+      </div>
+    </section>
+    <section id="how">
+      <div class="wrap">
+        <div class="section-head"><div><div class="kicker">How the ecosystem connects</div><h2>One business story. Multiple ways to grow.</h2></div><p>The podcast is the front door. A business profile gives the story a home, and the network helps people discover and connect.</p></div>
+        <div class="steps">
+          <div class="step"><div class="step-num">01</div><h3>Tell your story</h3><p>Apply for an interview and share what your business does.</p></div>
+          <div class="step"><div class="step-num">02</div><h3>Build your profile</h3><p>Present your services, location, contact details, and links.</p></div>
+          <div class="step"><div class="step-num">03</div><h3>Reach more people</h3><p>Share approved episode clips and featured business content.</p></div>
+          <div class="step"><div class="step-num">04</div><h3>Make connections</h3><p>Help customers and other owners find relevant businesses.</p></div>
+        </div>
+      </div>
+    </section>
+    <section class="join" id="join">
+      <div class="wrap join-grid">
+        <div><div class="kicker">Join the network</div><h2>Put your business in the conversation.</h2><p>Start with an interest request. The launch team can follow up about a business profile, podcast feature, or promotional partnership.</p><div class="join-list"><span><b class="check">✓</b> Business profile and directory visibility</span><span><b class="check">✓</b> Podcast interview consideration</span><span><b class="check">✓</b> Opportunities for local collaboration</span></div></div>
+        <form class="form-card" id="interestForm">
+          <h3>Business interest form</h3><p>Tell us a little about your business.</p>
+          <div class="field"><label for="ownerName">Your name</label><input id="ownerName" name="ownerName" autocomplete="name" required placeholder="Name"></div>
+          <div class="field"><label for="businessName">Business name</label><input id="businessName" name="businessName" required placeholder="Business name"></div>
+          <div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+          <div class="field"><label for="interest">I'm interested in</label><select id="interest" name="interest"><option>Business directory profile</option><option>Podcast interview</option><option>Marketing and promotion</option><option>Community partnership</option></select></div>
+          <button class="btn btn-primary" type="submit">Preview interest request</button>
+          <div class="toast" id="formNotice" role="status">This is a front-end prototype. Your information has not been sent or saved. The secure Firebase submission workflow still needs to be connected.</div>
+          <div class="notice">Prototype only: do not enter private or sensitive information. This form does not submit data.</div>
+        </form>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="wrap footer-grid"><div><a class="brand" href="#home"><span class="brand-mark">BEN</span><span style="color:#fff">BUSINESS ECOSYSTEM<small style="color:#9eafbc">NETWORK</small></span></a><p>Built to help local businesses be seen, heard, and connected.</p></div><div class="footer-links"><a href="#podcast">Podcast</a><a href="#directory">Directory</a><a href="#join">Join</a></div></div></footer>
+  <script>
+    const menuBtn=document.getElementById('menuBtn');
+    const navLinks=document.getElementById('navLinks');
+    menuBtn.addEventListener('click',()=>{const open=navLinks.classList.toggle('open');menuBtn.setAttribute('aria-expanded',String(open));});
+    navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{navLinks.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');}));
+    const search=document.getElementById('businessSearch');
+    const cards=[...document.querySelectorAll('.biz-card')];
+    const noResults=document.getElementById('noResults');
+    function filterBusinesses(){const q=search.value.trim().toLowerCase();let visible=0;cards.forEach(card=>{const match=(card.dataset.search+' '+card.innerText).toLowerCase().includes(q);card.hidden=!match;if(match)visible++;});noResults.hidden=visible!==0;}
+    document.getElementById('searchBtn').addEventListener('click',filterBusinesses);
+    search.addEventListener('input',filterBusinesses);
+    document.getElementById('interestForm').addEventListener('submit',event=>{event.preventDefault();document.getElementById('formNotice').classList.add('show');});
+  </script>
+</body>
+</html>
